@@ -187,11 +187,12 @@
 </div>
 
 <script>
-    // Paimam parametrus iš URL (city, days, budget)
+    // Paimam parametrus iš URL (city, days, budget, style)
     const params = new URLSearchParams(window.location.search);
     const city = params.get("city") || "nežinomas miestas";
     const days = parseInt(params.get("days") || "0", 10);
     const budget = parseFloat(params.get("budget") || "0");
+    const style = params.get("style") || "balanced";
 
     if (!days || !budget || days <= 0 || budget <= 0) {
         document.body.innerHTML =
@@ -199,16 +200,39 @@
     } else {
         const dayBudget = budget / days;
 
-        // Paprastas modelis: procentai
-        const food = dayBudget * 0.45;      // 45% maistas
-        const transport = dayBudget * 0.15; // 15% transportas
-        const fun = dayBudget * 0.40;       // 40% veiklos
+        // Pagal kelionės stilių parenkam procentus
+        let foodPct, transportPct, funPct;
+        let styleText;
+
+        if (style === "budget") {
+            // Taupus keliautojas: daugiau maisto iš parduotuvės, mažiau veiklų
+            foodPct = 0.40;
+            transportPct = 0.20;
+            funPct = 0.40;
+            styleText = "Pigiai (taupus stilius)";
+        } else if (style === "comfort") {
+            // Komfortas: daugiau maistui / veikloms
+            foodPct = 0.50;
+            transportPct = 0.15;
+            funPct = 0.35;
+            styleText = "Komfortiškai";
+        } else {
+            // Balansuotas
+            foodPct = 0.45;
+            transportPct = 0.15;
+            funPct = 0.40;
+            styleText = "Balansuota kelionė";
+        }
+
+        const food = dayBudget * foodPct;
+        const transport = dayBudget * transportPct;
+        const fun = dayBudget * funPct;
 
         const fmt = (num) => num.toFixed(2).replace(".", ",");
 
         // Santrauka
         document.getElementById("trip-subtitle").textContent =
-            `${city} · ${days} d. · biudžetas ${fmt(budget)} €`;
+            `${city} · ${days} d. · biudžetas ${fmt(budget)} € · ${styleText}`;
 
         document.getElementById("total-budget").textContent = fmt(budget) + " €";
         document.getElementById("days").textContent = days + " d.";
@@ -220,10 +244,10 @@
 
         // Užpildom dienų lentelę
         const tbody = document.getElementById("days-table-body");
+        tbody.innerHTML = "";
 
         for (let i = 1; i <= days; i++) {
             const tr = document.createElement("tr");
-
             const totalDay = food + transport + fun;
 
             tr.innerHTML = `
@@ -238,5 +262,6 @@
         }
     }
 </script>
+
 </body>
 </html>
