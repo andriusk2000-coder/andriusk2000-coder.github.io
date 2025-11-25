@@ -13,7 +13,7 @@
         }
 
         .wrap {
-            max-width: 640px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
@@ -64,7 +64,7 @@
         }
 
         .section-title {
-            margin-top: 18px;
+            margin-top: 4px;
             margin-bottom: 8px;
             font-size: 15px;
             font-weight: 600;
@@ -97,6 +97,31 @@
             font-weight: 700;
             cursor: pointer;
             font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 8px 6px;
+            text-align: left;
+        }
+
+        th {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.6);
+            opacity: 0.9;
+        }
+
+        tr:nth-child(even) td {
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        tr:nth-child(odd) td {
+            background: rgba(15, 23, 42, 0.4);
         }
     </style>
 </head>
@@ -137,6 +162,24 @@
         </p>
     </div>
 
+    <div class="card">
+        <div class="section-title">Dienų biudžeto lentelė</div>
+        <table>
+            <thead>
+            <tr>
+                <th>Diena</th>
+                <th>Maistas (€)</th>
+                <th>Transportas (€)</th>
+                <th>Veiklos (€)</th>
+                <th>Iš viso (€)</th>
+            </tr>
+            </thead>
+            <tbody id="days-table-body">
+            <!-- eilutės bus sukurtos per JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
     <button onclick="window.location.href='budget.html'">
         Susiplanuoti kitą kelionę
     </button>
@@ -150,18 +193,50 @@
     const days = parseInt(params.get("days") || "0", 10);
     const budget = parseFloat(params.get("budget") || "0");
 
-    // Apsauga – jei kažkas labai keisto suvestų
     if (!days || !budget || days <= 0 || budget <= 0) {
-        document.body.innerHTML = "<p style='padding:20px;font-family:system-ui;color:white;'>Neteisingi duomenys. Grįžk atgal ir įvesk biudžetą dar kartą.</p>";
+        document.body.innerHTML =
+            "<p style='padding:20px;font-family:system-ui;color:white;'>Neteisingi duomenys. Grįžk atgal ir įvesk biudžetą dar kartą.</p>";
     } else {
         const dayBudget = budget / days;
 
-        // Paprastas modelis: %
+        // Paprastas modelis: procentai
         const food = dayBudget * 0.45;      // 45% maistas
         const transport = dayBudget * 0.15; // 15% transportas
         const fun = dayBudget * 0.40;       // 40% veiklos
 
-        // Pagalba formatavimui
         const fmt = (num) => num.toFixed(2).replace(".", ",");
 
-        document.getEl
+        // Santrauka
+        document.getElementById("trip-subtitle").textContent =
+            `${city} · ${days} d. · biudžetas ${fmt(budget)} €`;
+
+        document.getElementById("total-budget").textContent = fmt(budget) + " €";
+        document.getElementById("days").textContent = days + " d.";
+        document.getElementById("day-budget").textContent = fmt(dayBudget) + " € / d.";
+
+        document.getElementById("food").textContent = fmt(food) + " €";
+        document.getElementById("transport").textContent = fmt(transport) + " €";
+        document.getElementById("fun").textContent = fmt(fun) + " €";
+
+        // Užpildom dienų lentelę
+        const tbody = document.getElementById("days-table-body");
+
+        for (let i = 1; i <= days; i++) {
+            const tr = document.createElement("tr");
+
+            const totalDay = food + transport + fun;
+
+            tr.innerHTML = `
+                <td>${i}</td>
+                <td>${fmt(food)}</td>
+                <td>${fmt(transport)}</td>
+                <td>${fmt(fun)}</td>
+                <td>${fmt(totalDay)}</td>
+            `;
+
+            tbody.appendChild(tr);
+        }
+    }
+</script>
+</body>
+</html>
