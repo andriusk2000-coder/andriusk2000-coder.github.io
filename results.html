@@ -81,7 +81,7 @@
         }
 
         .note {
-            margin-top: 14px;
+            margin-top: 10px;
             font-size: 12px;
             opacity: 0.75;
         }
@@ -146,6 +146,14 @@
             <div class="label">Dienos biudžetas</div>
             <div class="value" id="day-budget"></div>
         </div>
+        <div class="row">
+            <div class="label">Miesto kainų lygis</div>
+            <div class="value" id="city-level"></div>
+        </div>
+        <div class="row">
+            <div class="label">Rekomenduojamas dienos biudžetas šiame mieste</div>
+            <div class="value" id="city-suggest"></div>
+        </div>
     </div>
 
     <div class="card">
@@ -156,6 +164,7 @@
             <li>Veiklos / laisvalaikis: <span id="fun"></span> / d.</li>
         </ul>
 
+        <p class="note" id="city-comment"></p>
         <p class="note">
             Tai tik bazinis modelis. Vėliau galėsime prijungti dirbtinį intelektą,
             kad skaičiuotų pagal realias miesto kainas ir tavo kelionės stilių.
@@ -189,7 +198,9 @@
 <script>
     // Paimam parametrus iš URL (city, days, budget, style)
     const params = new URLSearchParams(window.location.search);
-    const city = params.get("city") || "nežinomas miestas";
+    const cityRaw = params.get("city") || "nežinomas miestas";
+    const city = cityRaw.trim();
+    const cityKey = city.toLowerCase();
     const days = parseInt(params.get("days") || "0", 10);
     const budget = parseFloat(params.get("budget") || "0");
     const style = params.get("style") || "balanced";
@@ -200,35 +211,69 @@
     } else {
         const dayBudget = budget / days;
 
-        // Pagal kelionės stilių parenkam procentus
+        // Stiliaus procentai
         let foodPct, transportPct, funPct;
         let styleText;
 
         if (style === "budget") {
-            // Taupus keliautojas: daugiau maisto iš parduotuvės, mažiau veiklų
             foodPct = 0.40;
             transportPct = 0.20;
             funPct = 0.40;
             styleText = "Pigiai (taupus stilius)";
         } else if (style === "comfort") {
-            // Komfortas: daugiau maistui / veikloms
             foodPct = 0.50;
             transportPct = 0.15;
             funPct = 0.35;
             styleText = "Komfortiškai";
         } else {
-            // Balansuotas
             foodPct = 0.45;
             transportPct = 0.15;
             funPct = 0.40;
             styleText = "Balansuota kelionė";
         }
 
+        // Miesto kainų lygis
+        let cityGroup = "medium";
+        let cityLevelText = "vidutinio brangumo miestas";
+
+        if ([
+            "vilnius","kaunas","klaipėda","klaipeda",
+            "riga","ryga","tallinn","talinas",
+            "warsaw","warszawa","varšuva","varsuva",
+            "budapest","budapeštas","budapestas",
+            "prague","praha"
+        ].includes(cityKey)) {
+            cityGroup = "cheap";
+            cityLevelText = "pigesnis miestas";
+        } else if ([
+            "paris","parisą","pariza",
+            "london","londonas",
+            "oslo","zurich","ciurichas",
+            "reykjavik","reikjavikas",
+            "copenhagen","kopenhaga"
+        ].includes(cityKey)) {
+            cityGroup = "expensive";
+            cityLevelText = "brangesnis miestas";
+        } else {
+            cityGroup = "medium";
+            cityLevelText = "vidutinio brangumo miestas";
+        }
+
+        // Bazinis rekomenduojamas dienos biudžetas pagal miesto lygį
+        let baseCityDay;
+        if (cityGroup === "cheap") baseCityDay = 60;
+        else if (cityGroup === "medium") baseCityDay = 80;
+        else baseCityDay = 110;
+
+        // Pakoreguojam pagal stilių
+        if (style === "budget") baseCityDay *= 0.85;
+        else if (style === "comfort") baseCityDay *= 1.15;
+
+        const fmt = (num) => num.toFixed(2).replace(".", ",");
+
         const food = dayBudget * foodPct;
         const transport = dayBudget * transportPct;
         const fun = dayBudget * funPct;
-
-        const fmt = (num) => num.toFixed(2).replace(".", ",");
 
         // Santrauka
         document.getElementById("trip-subtitle").textContent =
@@ -238,9 +283,24 @@
         document.getElementById("days").textContent = days + " d.";
         document.getElementById("day-budget").textContent = fmt(dayBudget) + " € / d.";
 
+        document.getElementById("city-level").textContent = cityLevelText;
+        document.getElementById("city-suggest").textContent = fmt(baseCityDay) + " € / d.";
+
         document.getElementById("food").textContent = fmt(food) + " €";
         document.getElementById("transport").textContent = fmt(transport) + " €";
         document.getElementById("fun").textContent = fmt(fun) + " €";
+
+        // Įvertinam, ar tavo biudžetas realistiškas tame mieste
+        const ratio = dayBudget / baseCityDay;
+        let comment;
+        if (ratio < 0.8) {
+            comment = "Tavo biudžetas šiam miestui yra gana taupus. Reikės labiau planuoti maistą ir veiklas.";
+        } else if (ratio <= 1.2) {
+            comment = "Tavo biudžetas šiam miestui atrodo subalansuotas – galėsi keliauti gana patogiai.";
+        } else {
+            comment = "Tavo biudžetas šiam miestui yra gana komfortiškas – galėsi sau leisti daugiau veiklų ir geresnį maistą.";
+        }
+        document.getElementById("city-comment").textContent = comment;
 
         // Užpildom dienų lentelę
         const tbody = document.getElementById("days-table-body");
@@ -253,15 +313,4 @@
             tr.innerHTML = `
                 <td>${i}</td>
                 <td>${fmt(food)}</td>
-                <td>${fmt(transport)}</td>
-                <td>${fmt(fun)}</td>
-                <td>${fmt(totalDay)}</td>
-            `;
-
-            tbody.appendChild(tr);
-        }
-    }
-</script>
-
-</body>
-</html>
+                <td>${fmt(tran
