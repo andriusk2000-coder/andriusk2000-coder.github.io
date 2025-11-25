@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8" />
+    <title>Kelionės biudžeto rezultatai</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            background: #050816;
+            color: #f9fafb;
+            font-family: system-ui, Arial;
+            padding: 32px 20px 40px;
+        }
+
+        .wrap {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        a {
+            color: #4ade80;
+            text-decoration: none;
+        }
+
+        .back {
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: inline-block;
+            opacity: 0.8;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            margin-top: 14px;
+            padding: 18px 16px;
+            border-radius: 12px;
+            background: #020617;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .label {
+            opacity: 0.8;
+        }
+
+        .value {
+            font-weight: 600;
+        }
+
+        .section-title {
+            margin-top: 18px;
+            margin-bottom: 8px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+            font-size: 14px;
+        }
+
+        ul li {
+            margin-bottom: 4px;
+        }
+
+        .note {
+            margin-top: 14px;
+            font-size: 12px;
+            opacity: 0.75;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #4ade80;
+            color: #020617;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <a class="back" href="budget.html">← Grįžti į skaičiuoklę</a>
+
+    <h1>Tavo kelionės biudžeto rezultatai</h1>
+    <p class="subtitle" id="trip-subtitle"></p>
+
+    <div class="card">
+        <div class="row">
+            <div class="label">Bendras biudžetas</div>
+            <div class="value" id="total-budget"></div>
+        </div>
+        <div class="row">
+            <div class="label">Dienų skaičius</div>
+            <div class="value" id="days"></div>
+        </div>
+        <div class="row">
+            <div class="label">Dienos biudžetas</div>
+            <div class="value" id="day-budget"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">Rekomenduojamas dienos paskirstymas</div>
+        <ul>
+            <li>Maistas: <span id="food"></span> / d.</li>
+            <li>Transportas: <span id="transport"></span> / d.</li>
+            <li>Veiklos / laisvalaikis: <span id="fun"></span> / d.</li>
+        </ul>
+
+        <p class="note">
+            Tai tik bazinis modelis. Vėliau galėsime prijungti dirbtinį intelektą,
+            kad skaičiuotų pagal realias miesto kainas ir tavo kelionės stilių.
+        </p>
+    </div>
+
+    <button onclick="window.location.href='budget.html'">
+        Susiplanuoti kitą kelionę
+    </button>
+
+</div>
+
+<script>
+    // Paimam parametrus iš URL (city, days, budget)
+    const params = new URLSearchParams(window.location.search);
+    const city = params.get("city") || "nežinomas miestas";
+    const days = parseInt(params.get("days") || "0", 10);
+    const budget = parseFloat(params.get("budget") || "0");
+
+    // Apsauga – jei kažkas labai keisto suvestų
+    if (!days || !budget || days <= 0 || budget <= 0) {
+        document.body.innerHTML = "<p style='padding:20px;font-family:system-ui;color:white;'>Neteisingi duomenys. Grįžk atgal ir įvesk biudžetą dar kartą.</p>";
+    } else {
+        const dayBudget = budget / days;
+
+        // Paprastas modelis: %
+        const food = dayBudget * 0.45;      // 45% maistas
+        const transport = dayBudget * 0.15; // 15% transportas
+        const fun = dayBudget * 0.40;       // 40% veiklos
+
+        // Pagalba formatavimui
+        const fmt = (num) => num.toFixed(2).replace(".", ",");
+
+        document.getEl
