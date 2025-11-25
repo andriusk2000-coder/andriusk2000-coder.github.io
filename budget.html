@@ -2,72 +2,212 @@
 <html lang="lt">
 <head>
     <meta charset="UTF-8" />
-    <title>Kelionės biudžeto skaičiuoklė</title>
+    <title>Kelionės biudžeto skaičiuoklė · Budget Travel AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        body {
-            background: #050816;
-            color: white;
-            font-family: system-ui, Arial;
-            padding: 40px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        h1 {
-            margin-bottom: 20px;
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            min-height: 100vh;
+            color: #f9fafb;
+            background: #020617;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero-bg {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(to bottom, rgba(15,23,42,0.7), rgba(15,23,42,0.96)),
+                url("hero.jpg.JPG");
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+
+        header {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: #38bdf8;
+        }
+
+        .header-link {
+            font-size: 12px;
+        }
+
+        .header-link a {
+            color: #e5e7eb;
+            text-decoration: none;
+            opacity: 0.85;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 16px 40px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            padding: 24px 20px 26px;
+            border-radius: 18px;
+            backdrop-filter: blur(22px);
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.6);
+            box-shadow:
+                0 22px 60px rgba(15,23,42,0.95),
+                0 0 40px rgba(56,189,248,0.25);
+        }
+
+        .card-title {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 18px;
         }
 
         label {
             display: block;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-size: 14px;
-            opacity: 0.85;
+            font-size: 13px;
+            margin-bottom: 4px;
+            opacity: 0.9;
         }
 
-        input {
+        input,
+        select {
             width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            margin-bottom: 10px;
+            padding: 10px 11px;
+            border-radius: 10px;
+            border: 1px solid rgba(148,163,184,0.8);
+            background: rgba(15,23,42,0.85);
+            color: #f9fafb;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        input::placeholder {
+            color: rgba(148,163,184,0.9);
         }
 
         button {
-            margin-top: 20px;
+            margin-top: 8px;
             width: 100%;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 11px 14px;
+            border-radius: 999px;
             border: none;
-            background: #4ade80;
-            color: black;
+            background: linear-gradient(135deg, #38bdf8, #6366f1);
+            color: #020617;
             font-weight: 700;
             cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 14px 40px rgba(37,99,235,0.75);
+        }
+
+        .note {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        footer {
+            font-size: 11px;
+            text-align: center;
+            padding: 10px 20px 18px;
+            opacity: 0.65;
+        }
+
+        a.back-link {
+            color: #38bdf8;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
+<div class="page">
+    <div class="hero-bg"></div>
 
-<h1>Kelionės biudžeto skaičiuoklė</h1>
+    <header>
+        <div class="logo">Budget<span>Travel</span> AI</div>
+        <div class="header-link"><a href="index.html">← Grįžti į pradžią</a></div>
+    </header>
 
-<form action="results.html" method="GET">
-    <label>Miestas</label>
-    <input type="text" name="city" placeholder="pvz. Barcelona" required>
+    <main>
+        <div class="card">
+            <div class="card-title">Kelionės biudžeto skaičiuoklė</div>
+            <div class="card-subtitle">
+                Įvesk pagrindinę informaciją ir gauk pradinį biudžeto planą pagal miestą
+                ir kelionės stilių.
+            </div>
 
-    <label>Kiek dienų?</label>
-    <input type="number" name="days" placeholder="pvz. 7" required>
+            <form action="results.html" method="GET">
+                <label for="city">Miestas</label>
+                <input id="city" type="text" name="city" placeholder="pvz. Barcelona, Vilnius, Londonas" required>
 
-    <label>Bendras biudžetas (€)</label>
-    <input type="number" name="budget" placeholder="pvz. 1000" required>
+                <label for="days">Kiek dienų?</label>
+                <input id="days" type="number" name="days" min="1" placeholder="pvz. 7" required>
 
-    <label>Kelionės stilius</label>
-    <select name="style" required>
-        <option value="budget">Pigiai</option>
-        <option value="balanced" selected>Balansuota</option>
-        <option value="comfort">Komfortiškai</option>
-    </select>
+                <label for="budget">Bendras biudžetas (€)</label>
+                <input id="budget" type="number" name="budget" min="1" placeholder="pvz. 1000" required>
 
-    <button type="submit">Skaičiuoti</button>
-</form>
+                <label for="style">Kelionės stilius</label>
+                <select id="style" name="style" required>
+                    <option value="budget">Pigiai (taupiai)</option>
+                    <option value="balanced" selected>Balansuota</option>
+                    <option value="comfort">Komfortiškai</option>
+                </select>
 
+                <button type="submit">Skaičiuoti biudžetą</button>
+
+                <p class="note">
+                    Skaičiavimai šiuo metu yra apytikriai ir paremti vidutinėmis kainomis.
+                    Vėliau jie bus tikslinami naudojant realius duomenis ir dirbtinį intelektą.
+                </p>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        © <span id="year"></span> Budget Travel AI
+    </footer>
+</div>
+
+<script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 </body>
 </html>
