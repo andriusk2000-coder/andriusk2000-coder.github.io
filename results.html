@@ -189,6 +189,15 @@
             padding: 10px 20px 18px;
             opacity: 0.65;
         }
+
+        .ai-box {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: rgba(15,23,42,0.9);
+            border: 1px dashed rgba(148,163,184,0.8);
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -221,7 +230,7 @@
                     <div class="value" id="day-budget"></div>
                 </div>
 
-                <div class="section-title">Miestas ir rekomendacijos</div>
+                <div class="section-title">Miestas ir rekomendacijos (lokalus skaičiavimas)</div>
                 <div class="row">
                     <div class="label">Miesto kainų lygis</div>
                     <div class="value" id="city-level"></div>
@@ -233,6 +242,11 @@
 
                 <p class="note" id="budget-comment"></p>
                 <p class="note" id="style-comment"></p>
+
+                <div class="section-title">AI serveris</div>
+                <div class="ai-box">
+                    <p id="ai-status">Jungiamasi prie AI serverio...</p>
+                </div>
             </div>
 
             <div class="card">
@@ -263,7 +277,7 @@
 
                 <p class="note">
                     Skaičiavimai yra orientaciniai. Vėliau jie gali būti patikslinti su realiais
-                    duomenimis (pvz., restoranų, viešojo transporto ir veiklų kainomis).
+                    duomenimis ir dirbtiniu intelektu.
                 </p>
             </div>
         </div>
@@ -294,7 +308,6 @@
         const cityKey = cityRaw.toLowerCase();
         const dayBudget = budget / days;
 
-        // miestų profiliai
         const cityProfiles = {
             "vilnius":   { label: "pigesnis miestas",             baseDay: 60 },
             "kaunas":    { label: "pigesnis miestas",             baseDay: 55 },
@@ -302,7 +315,6 @@
             "ryga":      { label: "pigesnis miestas",             baseDay: 60 },
             "barcelona": { label: "vidutinio brangumo miestas",   baseDay: 85 },
             "barceloną": { label: "vidutinio brangumo miestas",   baseDay: 85 },
-            "barcelona, spain": { label: "vidutinio brangumo miestas", baseDay: 85 },
             "london":    { label: "brangus miestas",              baseDay: 110 },
             "londonas":  { label: "brangus miestas",              baseDay: 110 },
             "paris":     { label: "brangus miestas",              baseDay: 105 },
@@ -348,7 +360,6 @@
             budgetComment = "Tavo biudžetas šiam miestui gana komfortiškas – galėsi sau leisti daugiau veiklų ir geresnį maistą.";
         }
 
-        // užpildom tekstus
         document.getElementById("trip-subtitle").textContent =
             `${city} · ${days} d. · biudžetas ${fmt(budget)} € · ${styleText}`;
         document.getElementById("total-budget").textContent = fmt(budget) + " €";
@@ -365,7 +376,6 @@
         document.getElementById("budget-comment").textContent = budgetComment;
         document.getElementById("style-comment").textContent = styleComment;
 
-        // lentelė
         const tbody = document.getElementById("days-table-body");
         tbody.innerHTML = "";
         for (let i = 1; i <= days; i++) {
@@ -380,6 +390,34 @@
             `;
             tbody.appendChild(tr);
         }
+
+        // ČIA – KVIEČIAM TAVO BACKEND
+        const apiUrl = "https://ai-backend-ta0h.onrender.com/api/plan-trip";
+        const aiStatus = document.getElementById("ai-status");
+        aiStatus.textContent = "Jungiamasi prie AI serverio...";
+
+        fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ city, days, budget, style })
+        })
+            .then((resp) => {
+                if (!resp.ok) {
+                    throw new Error("HTTP klaida: " + resp.status);
+                }
+                return resp.json();
+            })
+            .then((data) => {
+                if (data.ok) {
+                    aiStatus.textContent = "AI serveris pasiekiamas! (kol kas grąžina testinį atsakymą)";
+                } else {
+                    aiStatus.textContent = "Serveris atsakė, bet nurodė klaidą.";
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                aiStatus.textContent = "Nepavyko prisijungti prie AI serverio.";
+            });
     }
 </script>
 </body>
