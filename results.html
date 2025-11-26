@@ -198,6 +198,21 @@
             border: 1px dashed rgba(148,163,184,0.8);
             font-size: 12px;
         }
+
+        .ai-section-title {
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .ai-list {
+            margin-left: 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .ai-list li {
+            margin-bottom: 3px;
+        }
     </style>
 </head>
 <body>
@@ -243,7 +258,7 @@
                 <p class="note" id="budget-comment"></p>
                 <p class="note" id="style-comment"></p>
 
-                <div class="section-title">AI serveris</div>
+                <div class="section-title">AI rekomendacijos pagal biudžetą</div>
                 <div class="ai-box">
                     <p id="ai-status">Jungiamasi prie AI serverio...</p>
                 </div>
@@ -277,7 +292,7 @@
 
                 <p class="note">
                     Skaičiavimai yra orientaciniai. Vėliau jie gali būti patikslinti su realiais
-                    duomenimis ir dirbtiniu intelektu.
+                    duomenimis ir (jei norėsi) tikru dirbtiniu intelektu.
                 </p>
             </div>
         </div>
@@ -391,12 +406,12 @@
             tbody.appendChild(tr);
         }
 
-        // ČIA – KVIEČIAM TAVO BACKEND
+        // KVIEČIAM TAVO BACKEND SU PSEUDO-AI REKOMENDACIJOMIS
         const apiUrl = "https://ai-backend-ta0h.onrender.com/api/plan-trip";
         const aiStatus = document.getElementById("ai-status");
         aiStatus.textContent = "Jungiamasi prie AI serverio...";
 
-                fetch(apiUrl, {
+        fetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ city, days, budget, style })
@@ -418,19 +433,32 @@
                     const level = ai.cityLevel || "nežinoma";
                     const analysis = ai.budgetAnalysis || "AI nepateikė komentaro.";
 
-                    let activitiesHtml = "";
-                    if (Array.isArray(ai.suggestedActivities)) {
-                        activitiesHtml =
-                            "<br><br><strong>AI siūlomos veiklos:</strong><br>" +
-                            ai.suggestedActivities.map(a => "• " + a).join("<br>");
+                    let html = "";
+                    html += `<strong>AI įvertinimas (${city}):</strong><br>`;
+                    html += `Miesto kainų lygis: <strong>${level}</strong><br>`;
+                    html += `Rekomenduojamas dienos biudžetas: <strong>${recDay}</strong><br><br>`;
+                    html += analysis;
+
+                    if (ai.suggestions) {
+                        const s = ai.suggestions;
+                        const renderList = (title, items) => {
+                            if (!items || !items.length) return "";
+                            return `
+                                <div class="ai-section-title">${title}</div>
+                                <ul class="ai-list">
+                                    ${items.map(i => `<li>• ${i}</li>`).join("")}
+                                </ul>
+                            `;
+                        };
+
+                        html += "<br><br><strong>Rekomendacijos pagal biudžetą:</strong>";
+                        html += renderList("🍽 Maistas ir restoranai", s.food);
+                        html += renderList("🏨 Apgyvendinimas", s.hotels);
+                        html += renderList("🚍 Transportas", s.transport);
+                        html += renderList("🎡 Pramogos ir veiklos", s.fun);
                     }
 
-                    aiStatus.innerHTML =
-                        `<strong>AI įvertinimas (${city}):</strong><br>` +
-                        `Miesto kainų lygis: <strong>${level}</strong><br>` +
-                        `Rekomenduojamas dienos biudžetas: <strong>${recDay}</strong><br><br>` +
-                        analysis +
-                        activitiesHtml;
+                    aiStatus.innerHTML = html;
                 } else {
                     aiStatus.textContent = "Serveris atsakė, bet AI duomenų negavo.";
                 }
@@ -439,7 +467,6 @@
                 console.error(err);
                 aiStatus.textContent = "Nepavyko prisijungti prie AI serverio.";
             });
-
     }
 </script>
 </body>
