@@ -396,7 +396,7 @@
         const aiStatus = document.getElementById("ai-status");
         aiStatus.textContent = "Jungiamasi prie AI serverio...";
 
-        fetch(apiUrl, {
+                fetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ city, days, budget, style })
@@ -408,16 +408,38 @@
                 return resp.json();
             })
             .then((data) => {
-                if (data.ok) {
-                    aiStatus.textContent = "AI serveris pasiekiamas! (kol kas grąžina testinį atsakymą)";
+                if (data.ok && data.ai) {
+                    const ai = data.ai;
+
+                    const recDay = ai.recommendedDayBudget
+                        ? `${ai.recommendedDayBudget.toFixed ? ai.recommendedDayBudget.toFixed(2) : ai.recommendedDayBudget} € / d.`
+                        : "–";
+
+                    const level = ai.cityLevel || "nežinoma";
+                    const analysis = ai.budgetAnalysis || "AI nepateikė komentaro.";
+
+                    let activitiesHtml = "";
+                    if (Array.isArray(ai.suggestedActivities)) {
+                        activitiesHtml =
+                            "<br><br><strong>AI siūlomos veiklos:</strong><br>" +
+                            ai.suggestedActivities.map(a => "• " + a).join("<br>");
+                    }
+
+                    aiStatus.innerHTML =
+                        `<strong>AI įvertinimas (${city}):</strong><br>` +
+                        `Miesto kainų lygis: <strong>${level}</strong><br>` +
+                        `Rekomenduojamas dienos biudžetas: <strong>${recDay}</strong><br><br>` +
+                        analysis +
+                        activitiesHtml;
                 } else {
-                    aiStatus.textContent = "Serveris atsakė, bet nurodė klaidą.";
+                    aiStatus.textContent = "Serveris atsakė, bet AI duomenų negavo.";
                 }
             })
             .catch((err) => {
                 console.error(err);
                 aiStatus.textContent = "Nepavyko prisijungti prie AI serverio.";
             });
+
     }
 </script>
 </body>
